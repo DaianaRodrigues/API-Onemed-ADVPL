@@ -21,6 +21,7 @@ Class PLEnfermeiro
     PUBLIC METHOD save(oDados)
     PUBLIC METHOD gravar()
     PUBLIC METHOD mensagem()
+    PUBLIC METHOD getEnfermeiro()
 
 endclass
 
@@ -41,6 +42,8 @@ METHOD save(oDados) Class PLEnfermeiro
     Self:nCre := oDados["cre"]
     Self:nCpf := oDados["cpf"]
     Self:nTelefone := oDados["telefone"]
+
+    ZZ4->(DbSetorder(2))
 
     Do Case
 
@@ -67,11 +70,14 @@ METHOD save(oDados) Class PLEnfermeiro
 
         Case ValType(oDados["telefone"]) != "C"
             Self:cMensagem := 'O telefone tem que ser caractere!'
+
+        Case ZZ4->(DbSeek(xFilial("ZZ4")+oDados["cpf"]))
+            Self:cMensagem := EncodeUtf8('CPF já cadastrado!')
        
         OtherWise
-            
 
             Self:gravar()
+            lOk := .T.
     EndCase
 return lOk
 
@@ -92,3 +98,33 @@ return .T.
 METHOD mensagem() Class PLEnfermeiro
     
 return Self:cMensagem
+
+METHOD getEnfermeiro() Class PLEnfermeiro
+    Local aEnfermeiros := {}
+    Local oEnfermeiro := {}
+    Local oJson := JsonObject():new()
+    DbSelectArea("ZZ4")
+    ZZ4->(DbGoTop())
+
+    While ZZ4->(!EOF())
+
+    oEnfermeiro := JsonObject():new()
+    oEnfermeiro["nome"] := Alltrim(ZZ4->ZZ4_NOME)
+    oEnfermeiro["cre"] := ZZ4->ZZ4_CRE
+    oEnfermeiro["cpf"] := Alltrim(ZZ4->ZZ4_CPF)
+    oEnfermeiro["email"] := Alltrim(ZZ4->ZZ4_EMAIL)
+    oEnfermeiro["telefone"] := Alltrim(ZZ4->ZZ4_TELEFO)
+  
+    aAdd(aEnfermeiros, oEnfermeiro)
+
+    FreeObj(oEnfermeiro)
+    oEnfermeiro := Nil
+
+    ZZ4->(dbskip())
+    EndDo
+
+    ZZ4->(DbCloseArea())
+
+    oJson["enfermeiros"] := aEnfermeiros
+
+Return oJson:toJSON()

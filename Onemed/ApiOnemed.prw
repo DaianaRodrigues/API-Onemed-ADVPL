@@ -14,6 +14,10 @@ WsRestFul ONEMED Description "Serviços API para realizar cadastro de enfermeiros
     WSMethod POST cadEnferm Description "API criada para cadastrar enfermeiros" ;
     WSSyntax "{apiVersion}/enfermeiro" ;
     Path "{apiVersion}/enfermeiro" PRODUCES APPLICATION_JSON
+
+    WSMethod GET getEnferm Description "API criada para retornar cadastro de enfermeiros" ;
+    WSSyntax "{apiVersion}/enfermeiro" ;
+    Path "{apiVersion}/enfermeiro" PRODUCES APPLICATION_JSON
 End WsRestFul
 
 WSMethod POST cadEnferm WSService ONEMED
@@ -27,5 +31,12 @@ WSMethod POST cadEnferm WSService ONEMED
     ELSE
     ::setResponse('{"mensagem" : " '+ oEnfermeiro:mensagem()+'"}')
     ENDIF
+
+return .T.
+
+WSMethod GET getEnferm WSService ONEMED
+    Local oEnfermeiro := PLEnfermeiro():new()
+
+    ::setResponse(oEnfermeiro:getEnfermeiro())
 
 return .T.
